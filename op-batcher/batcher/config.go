@@ -8,6 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/urfave/cli/v2"
 
+	fraxda "github.com/ethereum-optimism/optimism/frax-da"
 	altda "github.com/ethereum-optimism/optimism/op-alt-da"
 	"github.com/ethereum-optimism/optimism/op-batcher/compressor"
 	"github.com/ethereum-optimism/optimism/op-batcher/config"
@@ -152,6 +153,7 @@ type CLIConfig struct {
 	PprofConfig   oppprof.CLIConfig
 	RPC           oprpc.CLIConfig
 	AltDA         altda.CLIConfig
+	DaConfig      fraxda.CLIConfig
 }
 
 func (c *CLIConfig) Check() error {
@@ -214,6 +216,9 @@ func (c *CLIConfig) Check() error {
 	if err := c.RPC.Check(); err != nil {
 		return err
 	}
+	if err := c.DaConfig.Check(); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -247,6 +252,7 @@ func NewConfig(ctx *cli.Context) *CLIConfig {
 		MetricsConfig:                opmetrics.ReadCLIConfig(ctx),
 		PprofConfig:                  oppprof.ReadCLIConfig(ctx),
 		RPC:                          oprpc.ReadCLIConfig(ctx),
+		DaConfig:                     fraxda.ReadCLIConfig(ctx),
 		AltDA:                        altda.ReadCLIConfig(ctx),
 		ThrottleConfig: ThrottleConfig{
 			AdditionalEndpoints: ctx.StringSlice(flags.AdditionalThrottlingEndpointsFlag.Name),
