@@ -3,6 +3,8 @@
 *
 
 !/cannon
+!/devnet-sdk
+!/frax-da
 !/op-core
 !/op-batcher
 !/op-chain-ops
