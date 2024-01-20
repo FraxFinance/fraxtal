@@ -303,7 +303,9 @@ func (n *OpNode) init(ctx context.Context, cfg *config.Config, overrides Initial
 	if err != nil {
 		return fmt.Errorf("failed to init profiling: %w", err)
 	}
-
+	if err := n.initDA(ctx, cfg); err != nil {
+		return fmt.Errorf("failed to init da: %w", err)
+	}
 	return nil
 }
 
@@ -314,6 +316,10 @@ func initEventSystem(node *OpNode) (event.System, driver.Drain, error) {
 	sys.AddTracer(event.NewMetricsTracer(node.metrics))
 	sys.Register("node", event.DeriverFunc(node.onEvent))
 	return sys, executor, nil
+}
+
+func (n *OpNode) initDA(ctx context.Context, cfg *config.Config) error {
+	return driver.SetDAClient(cfg.DaConfig)
 }
 
 func initL1Source(ctx context.Context, cfg *config.Config, node *OpNode) (*sources.L1Client, error) {
