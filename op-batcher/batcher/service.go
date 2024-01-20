@@ -12,6 +12,7 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/log"
 
+	fraxda "github.com/ethereum-optimism/optimism/frax-da"
 	altda "github.com/ethereum-optimism/optimism/op-alt-da"
 	"github.com/ethereum-optimism/optimism/op-batcher/flags"
 	"github.com/ethereum-optimism/optimism/op-batcher/metrics"
@@ -71,6 +72,7 @@ type BatcherService struct {
 	stopped         atomic.Bool
 
 	NotSubmittingOnStart bool
+	DAClient             *fraxda.DAClient
 }
 
 // BatcherServiceFromCLIConfig creates a new BatcherService from a CLIConfig.
@@ -114,6 +116,9 @@ func (bs *BatcherService) initFromCLIConfig(ctx context.Context, version string,
 	}
 	if err := bs.initPProf(cfg); err != nil {
 		return fmt.Errorf("failed to init profiling: %w", err)
+	}
+	if err := bs.initDA(cfg); err != nil {
+		return fmt.Errorf("failed to start da client: %w", err)
 	}
 	// init before driver
 	if err := bs.initAltDA(cfg); err != nil {
@@ -323,6 +328,7 @@ func (bs *BatcherService) initDriver() {
 		EndpointProvider: bs.EndpointProvider,
 		ChannelConfig:    bs.ChannelConfig,
 		AltDA:            bs.AltDA,
+		DAClient:         bs.DAClient,
 	})
 }
 
@@ -354,6 +360,15 @@ func (bs *BatcherService) initAltDA(cfg *CLIConfig) error {
 	}
 	bs.AltDA = config.NewDAClient()
 	bs.UseAltDA = config.Enabled
+	return nil
+}
+
+func (bs *BatcherService) initDA(cfg *CLIConfig) error {
+	client, err := fraxda.NewDAClient(cfg.DaConfig.DaRpc)
+	if err != nil {
+		return err
+	}
+	bs.DAClient = client
 	return nil
 }
 

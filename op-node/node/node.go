@@ -149,7 +149,14 @@ func (n *OpNode) init(ctx context.Context, cfg *Config) error {
 	if err := n.initPProf(cfg); err != nil {
 		return fmt.Errorf("failed to init profiling: %w", err)
 	}
+	if err := n.initDA(ctx, cfg); err != nil {
+		return fmt.Errorf("failed to init da: %w", err)
+	}
 	return nil
+}
+
+func (n *OpNode) initDA(ctx context.Context, cfg *Config) error {
+	return driver.SetDAClient(cfg.DaConfig)
 }
 
 func (n *OpNode) initTracer(ctx context.Context, cfg *Config) error {

@@ -69,6 +69,10 @@ variable "OP_CONDUCTOR_VERSION" {
   default = "${GIT_VERSION}"
 }
 
+variable "OP_BOOTNODE_VERSION" {
+  default = "${GIT_VERSION}"
+}
+
 
 target "op-node" {
   dockerfile = "ops/docker/op-stack-go/Dockerfile"
@@ -80,7 +84,7 @@ target "op-node" {
   }
   target = "op-node-target"
   platforms = split(",", PLATFORMS)
-  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}/op-node:${tag}"]
+  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}-op-node:${tag}"]
 }
 
 target "op-batcher" {
@@ -93,7 +97,7 @@ target "op-batcher" {
   }
   target = "op-batcher-target"
   platforms = split(",", PLATFORMS)
-  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}/op-batcher:${tag}"]
+  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}-op-batcher:${tag}"]
 }
 
 target "op-proposer" {
@@ -106,7 +110,7 @@ target "op-proposer" {
   }
   target = "op-proposer-target"
   platforms = split(",", PLATFORMS)
-  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}/op-proposer:${tag}"]
+  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}-op-proposer:${tag}"]
 }
 
 target "op-challenger" {
@@ -119,7 +123,7 @@ target "op-challenger" {
   }
   target = "op-challenger-target"
   platforms = split(",", PLATFORMS)
-  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}/op-challenger:${tag}"]
+  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}-op-challenger:${tag}"]
 }
 
 target "op-dispute-mon" {
@@ -132,7 +136,7 @@ target "op-dispute-mon" {
   }
   target = "op-dispute-mon-target"
   platforms = split(",", PLATFORMS)
-  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}/op-dispute-mon:${tag}"]
+  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}-op-dispute-mon:${tag}"]
 }
 
 target "op-conductor" {
@@ -145,7 +149,7 @@ target "op-conductor" {
   }
   target = "op-conductor-target"
   platforms = split(",", PLATFORMS)
-  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}/op-conductor:${tag}"]
+  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}-op-conductor:${tag}"]
 }
 
 target "da-server" {
@@ -157,7 +161,7 @@ target "da-server" {
   }
   target = "da-server-target"
   platforms = split(",", PLATFORMS)
-  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}/da-server:${tag}"]
+  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}-da-server:${tag}"]
 }
 
 target "op-program" {
@@ -170,7 +174,7 @@ target "op-program" {
   }
   target = "op-program-target"
   platforms = split(",", PLATFORMS)
-  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}/op-program:${tag}"]
+  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}-op-program:${tag}"]
 }
 
 target "op-supervisor" {
@@ -183,7 +187,7 @@ target "op-supervisor" {
   }
   target = "op-supervisor-target"
   platforms = split(",", PLATFORMS)
-  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}/op-supervisor:${tag}"]
+  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}-op-supervisor:${tag}"]
 }
 
 target "cannon" {
@@ -196,7 +200,7 @@ target "cannon" {
   }
   target = "cannon-target"
   platforms = split(",", PLATFORMS)
-  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}/cannon:${tag}"]
+  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}-cannon:${tag}"]
 }
 
 target "ci-builder" {
@@ -204,7 +208,7 @@ target "ci-builder" {
   context = "."
   platforms = split(",", PLATFORMS)
   target="base-builder"
-  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}/ci-builder:${tag}"]
+  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}-ci-builder:${tag}"]
 }
 
 target "ci-builder-rust" {
@@ -212,7 +216,7 @@ target "ci-builder-rust" {
   context = "."
   platforms = split(",", PLATFORMS)
   target="rust-builder"
-  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}/ci-builder-rust:${tag}"]
+  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}-ci-builder-rust:${tag}"]
 }
 
 target "contracts-bedrock" {
@@ -220,5 +224,18 @@ target "contracts-bedrock" {
   context = "."
   target = "contracts-bedrock"
   platforms = split(",", PLATFORMS)
-  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}/contracts-bedrock:${tag}"]
+  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}-contracts-bedrock:${tag}"]
+}
+
+target "op-bootnode" {
+  dockerfile = "ops/docker/op-stack-go/Dockerfile"
+  context = "."
+  args = {
+    GIT_COMMIT = "${GIT_COMMIT}"
+    GIT_DATE = "${GIT_DATE}"
+    OP_BOOTNODE_VERSION = "${OP_BOOTNODE_VERSION}"
+  }
+  target = "op-bootnode-target"
+  platforms = split(",", PLATFORMS)
+  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}-op-bootnode:${tag}"]
 }
