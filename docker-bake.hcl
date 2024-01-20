@@ -112,7 +112,7 @@ target "op-node" {
   }
   target = "op-node-target"
   platforms = split(",", PLATFORMS)
-  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}/op-node:${tag}"]
+  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}-op-node:${tag}"]
 }
 
 target "op-batcher" {
@@ -125,7 +125,7 @@ target "op-batcher" {
   }
   target = "op-batcher-target"
   platforms = split(",", PLATFORMS)
-  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}/op-batcher:${tag}"]
+  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}-op-batcher:${tag}"]
 }
 
 target "op-proposer" {
@@ -138,7 +138,7 @@ target "op-proposer" {
   }
   target = "op-proposer-target"
   platforms = split(",", PLATFORMS)
-  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}/op-proposer:${tag}"]
+  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}-op-proposer:${tag}"]
 }
 
 target "op-challenger" {
@@ -153,7 +153,7 @@ target "op-challenger" {
   }
   target = "op-challenger-target"
   platforms = split(",", PLATFORMS)
-  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}/op-challenger:${tag}"]
+  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}-op-challenger:${tag}"]
 }
 
 target "op-dispute-mon" {
@@ -166,7 +166,7 @@ target "op-dispute-mon" {
   }
   target = "op-dispute-mon-target"
   platforms = split(",", PLATFORMS)
-  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}/op-dispute-mon:${tag}"]
+  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}-op-dispute-mon:${tag}"]
 }
 
 target "op-conductor" {
@@ -179,7 +179,7 @@ target "op-conductor" {
   }
   target = "op-conductor-target"
   platforms = split(",", PLATFORMS)
-  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}/op-conductor:${tag}"]
+  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}-op-conductor:${tag}"]
 }
 
 target "da-server" {
@@ -191,7 +191,7 @@ target "da-server" {
   }
   target = "da-server-target"
   platforms = split(",", PLATFORMS)
-  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}/da-server:${tag}"]
+  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}-da-server:${tag}"]
 }
 
 target "op-program" {
@@ -204,7 +204,7 @@ target "op-program" {
   }
   target = "op-program-target"
   platforms = split(",", PLATFORMS)
-  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}/op-program:${tag}"]
+  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}-op-program:${tag}"]
 }
 
 target "op-supervisor" {
@@ -217,7 +217,7 @@ target "op-supervisor" {
   }
   target = "op-supervisor-target"
   platforms = split(",", PLATFORMS)
-  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}/op-supervisor:${tag}"]
+  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}-op-supervisor:${tag}"]
 }
 
 target "op-supernode" {
@@ -256,7 +256,7 @@ target "cannon" {
   }
   target = "cannon-target"
   platforms = split(",", PLATFORMS)
-  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}/cannon:${tag}"]
+  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}-cannon:${tag}"]
 }
 
 target "holocene-deployer" {
