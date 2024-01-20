@@ -11,6 +11,7 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/log"
 
+	fraxda "github.com/ethereum-optimism/optimism/frax-da"
 	altda "github.com/ethereum-optimism/optimism/op-alt-da"
 	"github.com/ethereum-optimism/optimism/op-batcher/config"
 	"github.com/ethereum-optimism/optimism/op-batcher/flags"
@@ -19,6 +20,7 @@ import (
 	"github.com/ethereum-optimism/optimism/op-node/chaincfg"
 	"github.com/ethereum-optimism/optimism/op-node/params"
 	"github.com/ethereum-optimism/optimism/op-node/rollup"
+	"github.com/ethereum-optimism/optimism/op-service/bgpo"
 	"github.com/ethereum-optimism/optimism/op-service/cliapp"
 	"github.com/ethereum-optimism/optimism/op-service/dial"
 	"github.com/ethereum-optimism/optimism/op-service/eth"
@@ -80,6 +82,11 @@ type BatcherService struct {
 	stopped         atomic.Bool
 
 	NotSubmittingOnStart bool
+
+	// BlobGasPriceOracle tracks blob base gas prices for dynamic pricing
+	blobTipOracle *bgpo.BlobTipOracle
+	oracleStopCh  chan struct{}
+	DAClient      *fraxda.DAClient
 }
 
 type DriverSetupOption func(setup *DriverSetup)
@@ -175,6 +182,9 @@ func (bs *BatcherService) initFromCLIConfig(ctx context.Context, closeApp contex
 	// must be init before driver and channel config
 	if err := bs.initAltDA(cfg); err != nil {
 		return fmt.Errorf("failed to init AltDA: %w", err)
+	}
+	if err := bs.initDA(cfg); err != nil {
+		return fmt.Errorf("failed to start da client: %w", err)
 	}
 	if err := bs.initChannelConfig(cfg); err != nil {
 		return fmt.Errorf("failed to init channel config: %w", err)
@@ -403,6 +413,7 @@ func (bs *BatcherService) initDriver(opts ...DriverSetupOption) {
 		EndpointProvider: bs.EndpointProvider,
 		ChannelConfig:    bs.ChannelConfig,
 		AltDA:            bs.AltDA,
+		DAClient:         bs.DAClient,
 	}
 	for _, opt := range opts {
 		opt(&ds)
@@ -440,6 +451,15 @@ func (bs *BatcherService) initAltDA(cfg *CLIConfig) error {
 	bs.AltDA = config.NewDAClient()
 	bs.UseAltDA = config.Enabled
 	bs.GenericDA = config.GenericDA
+	return nil
+}
+
+func (bs *BatcherService) initDA(cfg *CLIConfig) error {
+	client, err := fraxda.NewDAClient(cfg.DaConfig.DaRpc)
+	if err != nil {
+		return err
+	}
+	bs.DAClient = client
 	return nil
 }
 
