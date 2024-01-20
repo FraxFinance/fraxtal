@@ -13,6 +13,7 @@ import (
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/params"
 
+	fraxda "github.com/ethereum-optimism/optimism/frax-da"
 	altda "github.com/ethereum-optimism/optimism/op-alt-da"
 	"github.com/ethereum-optimism/optimism/op-node/chaincfg"
 	"github.com/ethereum-optimism/optimism/op-node/config"
@@ -132,6 +133,8 @@ func NewConfig(ctx cliiface.Context, log log.Logger) (*config.Config, error) {
 		FetchWithdrawalRootFromState:    ctx.Bool(flags.FetchWithdrawalRootFromState.Name),
 
 		ExperimentalOPStackAPI: ctx.Bool(flags.ExperimentalOPStackAPI.Name),
+
+		DaConfig: fraxda.Config(fraxda.ReadCLIConfig(ctx)),
 	}
 
 	if err := cfg.LoadPersisted(log); err != nil {
