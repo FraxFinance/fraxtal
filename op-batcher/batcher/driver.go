@@ -2,6 +2,7 @@ package batcher
 
 import (
 	"context"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"io"
@@ -10,6 +11,7 @@ import (
 	"sync"
 	"time"
 
+	fraxda "github.com/ethereum-optimism/optimism/frax-da"
 	altda "github.com/ethereum-optimism/optimism/op-alt-da"
 	"github.com/ethereum-optimism/optimism/op-batcher/metrics"
 	"github.com/ethereum-optimism/optimism/op-node/rollup"
@@ -85,6 +87,7 @@ type DriverSetup struct {
 	EndpointProvider dial.L2EndpointProvider
 	ChannelConfig    ChannelConfigProvider
 	AltDA            *altda.DAClient
+	DAClient         *fraxda.DAClient
 }
 
 // BatchSubmitter encapsulates a service responsible for submitting L2 tx
@@ -655,7 +658,21 @@ func (l *BatchSubmitter) sendTransaction(txdata txData, queue *txmgr.Queue[txRef
 		if nf := len(txdata.frames); nf != 1 {
 			l.Log.Crit("Unexpected number of frames in calldata tx", "num_frames", nf)
 		}
-		candidate = l.calldataTxCandidate(txdata.CallData())
+
+		data := txdata.CallData()
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		l.Log.Info("fraxda: submitting data", "bytes", len(data))
+		id, err := l.DAClient.Write(ctx, data)
+		cancel()
+		if err == nil {
+			l.Log.Info("fraxda: data successfully submitted", "id", hex.EncodeToString(id))
+			data = append([]byte{fraxda.DerivationVersionFraxDa}, id...)
+		} else {
+			l.Log.Error("fraxda: data submission failed", "err", err)
+			l.recordFailedDARequest(txdata.ID(), err)
+			return nil
+		}
+		candidate = l.calldataTxCandidate(data)
 	}
 
 	l.sendTx(txdata, false, candidate, queue, receiptsCh)

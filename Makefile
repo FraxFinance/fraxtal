@@ -190,14 +190,14 @@ devnet-test: pre-devnet ## Runs tests on the local devnet
 	make -C op-e2e test-devnet
 .PHONY: devnet-test
 
-devnet-down: ## Stops the local devnet
-	@(cd ./ops-bedrock && GENESIS_TIMESTAMP=$(shell date +%s) docker compose stop)
+devnet-down:
+	@(cd ./ops-bedrock && GENESIS_TIMESTAMP=$(shell date +%s) docker compose rm -sf)
 .PHONY: devnet-down
 
 devnet-clean: ## Cleans up local devnet environment
 	rm -rf ./packages/contracts-bedrock/deployments/devnetL1
 	rm -rf ./.devnet
-	cd ./ops-bedrock && docker compose down
+	cd ./ops-bedrock && docker compose rm -sf
 	docker image ls 'ops-bedrock*' --format='{{.Repository}}' | xargs -r docker rmi
 	docker volume ls --filter name=ops-bedrock --format='{{.Name}}' | xargs -r docker volume rm
 .PHONY: devnet-clean
