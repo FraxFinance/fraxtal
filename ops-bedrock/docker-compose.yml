@@ -11,6 +11,7 @@ volumes:
   challenger_data:
   da_data:
   op_log:
+  da:
 
 
 services:
@@ -95,6 +96,7 @@ services:
       --safedb.path=/db
       --plasma.enabled=${PLASMA_ENABLED}
       --plasma.da-server=http://da-server:3100
+      --da.rpc=http://host.docker.internal:8080
     ports:
       - "7545:8545"
       - "9003:9003"
@@ -172,6 +174,7 @@ services:
       OP_BATCHER_BATCH_TYPE: 0
       OP_BATCHER_PLASMA_ENABLED: "${PLASMA_ENABLED}"
       OP_BATCHER_PLASMA_DA_SERVER: "http://da-server:3100"
+      OP_BATCHER_DA_RPC: http://host.docker.internal:8080
 
   op-challenger:
     depends_on:
