@@ -32,7 +32,7 @@ ARG TARGETARCH
 
 # Install yq
 RUN wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_$TARGETARCH -O /usr/local/bin/yq && \
-    chmod +x /usr/local/bin/yq
+  chmod +x /usr/local/bin/yq
 
 # Install versioned toolchain
 COPY ./mise.toml .
