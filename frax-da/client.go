@@ -62,6 +62,29 @@ func (c DAClient) Read(ctx context.Context, id []byte) ([]byte, error) {
 	return body, nil
 }
 
+func (c DAClient) ReadCelestia(ctx context.Context, hexString string) ([]byte, error) {
+	fetchUrl := c.baseUrl.ResolveReference(&url.URL{Path: fmt.Sprintf("/v1/blobs/celestia-%s", hexString)})
+	request, err := http.NewRequestWithContext(ctx, "GET", fetchUrl.String(), nil)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create request to fetch celestia data from DA: %w", err)
+	}
+	resp, err := c.httpClient.Do(request)
+
+	if err != nil {
+		return nil, fmt.Errorf("unable to fetch DA celestia data: %w", err)
+	}
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("unable to fetch DA celestia data, got status code %d", resp.StatusCode)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("unable to read DA celestia data fetch response: %w", err)
+	}
+
+	return body, nil
+}
+
 func (c DAClient) Write(ctx context.Context, data []byte) ([]byte, error) {
 	submitUrl := c.baseUrl.ResolveReference(&url.URL{Path: "/v1/blobs"})
 
