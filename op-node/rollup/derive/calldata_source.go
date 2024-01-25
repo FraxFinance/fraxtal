@@ -169,6 +169,15 @@ func DataFromEVMTransactions(dsCfg DataSourceConfig, batcherAddr common.Address,
 						return nil, NewResetError(fmt.Errorf("fraxda: failed to fetch data for id %s: %w", hex.EncodeToString(data), err))
 					}
 					out = append(out, data)
+				case fraxda.DerivationVersionCelestia:
+					log.Info("fraxda: requesting old celestia data", "id", hex.EncodeToString(data))
+					ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+					data, err := daClient.ReadCelestia(ctx, hex.EncodeToString(data[1:]))
+					cancel()
+					if err != nil {
+						return nil, NewResetError(fmt.Errorf("fraxda: failed to fetch celestia data for id %s: %w", hex.EncodeToString(data), err))
+					}
+					out = append(out, data)
 				default:
 					out = append(out, data)
 					log.Info("fraxda: using eth fallback")
