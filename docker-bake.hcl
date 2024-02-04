@@ -38,7 +38,7 @@ target "op-stack-go" {
     GIT_DATE = "${GIT_DATE}"
   }
   platforms = split(",", PLATFORMS)
-  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}/op-stack-go:${tag}"]
+  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}-op-stack-go:${tag}"]
 }
 
 target "op-node" {
@@ -51,7 +51,7 @@ target "op-node" {
     op-stack-go: "target:op-stack-go"
   }
   platforms = split(",", PLATFORMS)
-  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}/op-node:${tag}"]
+  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}-op-node:${tag}"]
 }
 
 target "op-batcher" {
@@ -64,7 +64,7 @@ target "op-batcher" {
     op-stack-go: "target:op-stack-go"
   }
   platforms = split(",", PLATFORMS)
-  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}/op-batcher:${tag}"]
+  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}-op-batcher:${tag}"]
 }
 
 target "op-proposer" {
@@ -77,7 +77,7 @@ target "op-proposer" {
     op-stack-go: "target:op-stack-go"
   }
   platforms = split(",", PLATFORMS)
-  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}/op-proposer:${tag}"]
+  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}-op-proposer:${tag}"]
 }
 
 target "op-challenger" {
@@ -90,7 +90,7 @@ target "op-challenger" {
     op-stack-go: "target:op-stack-go"
   }
   platforms = split(",", PLATFORMS)
-  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}/op-challenger:${tag}"]
+  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}-op-challenger:${tag}"]
 }
 
 target "op-conductor" {
@@ -103,7 +103,7 @@ target "op-conductor" {
     op-stack-go: "target:op-stack-go"
   }
   platforms = split(",", PLATFORMS)
-  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}/op-conductor:${tag}"]
+  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}-op-conductor:${tag}"]
 }
 
 target "op-heartbeat" {
@@ -116,7 +116,7 @@ target "op-heartbeat" {
     op-stack-go: "target:op-stack-go"
   }
   platforms = split(",", PLATFORMS)
-  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}/op-heartbeat:${tag}"]
+  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}-op-heartbeat:${tag}"]
 }
 
 target "op-program" {
@@ -129,7 +129,7 @@ target "op-program" {
     op-stack-go: "target:op-stack-go"
   }
   platforms = split(",", PLATFORMS)
-  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}/op-program:${tag}"]
+  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}-op-program:${tag}"]
 }
 
 target "op-ufm" {
@@ -142,7 +142,7 @@ target "op-ufm" {
     GITVERSION = "${GIT_VERSION}"
   }
   platforms = split(",", PLATFORMS)
-  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}/op-ufm:${tag}"]
+  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}-op-ufm:${tag}"]
 }
 
 target "proxyd" {
@@ -155,7 +155,7 @@ target "proxyd" {
     GITVERSION = "${GIT_VERSION}"
   }
   platforms = split(",", PLATFORMS)
-  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}/proxyd:${tag}"]
+  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}-proxyd:${tag}"]
 }
 
 target "indexer" {
@@ -168,7 +168,7 @@ target "indexer" {
     GITVERSION = "${GIT_VERSION}"
   }
   platforms = split(",", PLATFORMS)
-  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}/indexer:${tag}"]
+  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}-indexer:${tag}"]
 }
 
 target "ufm-metamask" {
@@ -181,7 +181,7 @@ target "ufm-metamask" {
     GITVERSION = "${GIT_VERSION}"
   }
   platforms = split(",", PLATFORMS)
-  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}/ufm-metamask:${tag}"]
+  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}-ufm-metamask:${tag}"]
 }
 
 target "chain-mon" {
@@ -196,14 +196,14 @@ target "chain-mon" {
   // this is a multi-stage build, where each stage is a possible output target, but wd-mon is all we publish
   target = "wd-mon"
   platforms = split(",", PLATFORMS)
-  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}/chain-mon:${tag}"]
+  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}-chain-mon:${tag}"]
 }
 
 target "ci-builder" {
   dockerfile = "./ops/docker/ci-builder/Dockerfile"
   context = "."
   platforms = split(",", PLATFORMS)
-  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}/ci-builder:${tag}"]
+  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}-ci-builder:${tag}"]
 }
 
 target "contracts-bedrock" {
@@ -211,5 +211,5 @@ target "contracts-bedrock" {
   context = "."
   target = "contracts-bedrock"
   platforms = split(",", PLATFORMS)
-  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}/contracts-bedrock:${tag}"]
+  tags = [for tag in split(",", IMAGE_TAGS) : "${REGISTRY}/${REPOSITORY}-contracts-bedrock:${tag}"]
 }
