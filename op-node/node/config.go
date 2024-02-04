@@ -7,6 +7,7 @@ import (
 	"math"
 	"time"
 
+	fraxda "github.com/ethereum-optimism/optimism/frax-da"
 	"github.com/ethereum-optimism/optimism/op-node/flags"
 	"github.com/ethereum-optimism/optimism/op-node/p2p"
 	"github.com/ethereum-optimism/optimism/op-node/rollup"
@@ -70,6 +71,8 @@ type Config struct {
 	ConductorEnabled    bool
 	ConductorRpc        string
 	ConductorRpcTimeout time.Duration
+
+	DaConfig fraxda.Config
 
 	// Plasma DA config
 	Plasma plasma.CLIConfig
@@ -167,6 +170,9 @@ func (cfg *Config) Check() error {
 		if !cfg.Driver.SequencerEnabled {
 			return fmt.Errorf("sequencer must be enabled when conductor is enabled")
 		}
+	}
+	if err := cfg.DaConfig.Check(); err != nil {
+		return fmt.Errorf("da config error: %w", err)
 	}
 	if err := cfg.Plasma.Check(); err != nil {
 		return fmt.Errorf("plasma config error: %w", err)

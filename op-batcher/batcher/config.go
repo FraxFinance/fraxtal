@@ -8,6 +8,7 @@ import (
 
 	"github.com/urfave/cli/v2"
 
+	fraxda "github.com/ethereum-optimism/optimism/frax-da"
 	"github.com/ethereum-optimism/optimism/op-batcher/compressor"
 	"github.com/ethereum-optimism/optimism/op-batcher/flags"
 	plasma "github.com/ethereum-optimism/optimism/op-plasma"
@@ -71,6 +72,7 @@ type CLIConfig struct {
 	PprofConfig      oppprof.CLIConfig
 	CompressorConfig compressor.CLIConfig
 	RPC              oprpc.CLIConfig
+	DaConfig         fraxda.CLIConfig
 	PlasmaDA         plasma.CLIConfig
 }
 
@@ -111,6 +113,9 @@ func (c *CLIConfig) Check() error {
 	if err := c.RPC.Check(); err != nil {
 		return err
 	}
+	if err := c.DaConfig.Check(); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -138,6 +143,7 @@ func NewConfig(ctx *cli.Context) *CLIConfig {
 		PprofConfig:                  oppprof.ReadCLIConfig(ctx),
 		CompressorConfig:             compressor.ReadCLIConfig(ctx),
 		RPC:                          oprpc.ReadCLIConfig(ctx),
+		DaConfig:                     fraxda.ReadCLIConfig(ctx),
 		PlasmaDA:                     plasma.ReadCLIConfig(ctx),
 	}
 }

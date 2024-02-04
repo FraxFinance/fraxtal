@@ -8,6 +8,7 @@ volumes:
   l1_data:
   l2_data:
   op_log:
+  da:
 
 
 services:
@@ -89,6 +90,7 @@ services:
       --metrics.port=7300
       --pprof.enabled
       --rpc.enable-admin
+      --da.rpc=http://host.docker.internal:8080
     ports:
       - "7545:8545"
       - "9003:9003"
@@ -163,6 +165,7 @@ services:
       OP_BATCHER_METRICS_ENABLED: "true"
       OP_BATCHER_RPC_ENABLE_ADMIN: "true"
       OP_BATCHER_BATCH_TYPE: 0
+      OP_BATCHER_DA_RPC: http://host.docker.internal:8080
 
   op-challenger:
     depends_on:
