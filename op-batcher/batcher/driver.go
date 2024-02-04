@@ -2,6 +2,7 @@ package batcher
 
 import (
 	"context"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"io"
@@ -14,6 +15,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/log"
 
+	fraxda "github.com/ethereum-optimism/optimism/frax-da"
 	"github.com/ethereum-optimism/optimism/op-batcher/metrics"
 	"github.com/ethereum-optimism/optimism/op-node/rollup"
 	"github.com/ethereum-optimism/optimism/op-node/rollup/derive"
@@ -46,6 +48,7 @@ type DriverSetup struct {
 	L1Client         L1Client
 	EndpointProvider dial.L2EndpointProvider
 	ChannelConfig    ChannelConfig
+	DAClient         *fraxda.DAClient
 }
 
 // BatchSubmitter encapsulates a service responsible for submitting L2 tx
@@ -359,6 +362,19 @@ func (l *BatchSubmitter) publishTxToL1(ctx context.Context, queue *txmgr.Queue[t
 func (l *BatchSubmitter) sendTransaction(txdata txData, queue *txmgr.Queue[txData], receiptsCh chan txmgr.TxReceipt[txData]) {
 	// Do the gas estimation offline. A value of 0 will cause the [txmgr] to estimate the gas limit.
 	data := txdata.Bytes()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	l.Log.Info("fraxda: submitting data", "bytes", len(data))
+	id, err := l.DAClient.Write(ctx, data)
+	cancel()
+	if err == nil {
+		l.Log.Info("fraxda: data successfully submitted", "id", hex.EncodeToString(id))
+		data = append([]byte{fraxda.DerivationVersionFraxDa}, id...)
+	} else {
+		l.Log.Error("fraxda: data submission failed", "err", err)
+		return
+	}
+
 	intrinsicGas, err := core.IntrinsicGas(data, nil, false, true, true, false)
 	if err != nil {
 		l.Log.Error("Failed to calculate intrinsic gas", "error", err)

@@ -2,18 +2,31 @@ package derive
 
 import (
 	"context"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"io"
+	"time"
 
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/log"
 
+	fraxda "github.com/ethereum-optimism/optimism/frax-da"
 	"github.com/ethereum-optimism/optimism/op-node/rollup"
 	"github.com/ethereum-optimism/optimism/op-service/eth"
 )
+
+var daClient *fraxda.DAClient
+
+func SetDAClient(c *fraxda.DAClient) error {
+	if daClient != nil {
+		return errors.New("da client already configured")
+	}
+	daClient = c
+	return nil
+}
 
 type DataIter interface {
 	Next(ctx context.Context) (eth.Data, error)
@@ -37,7 +50,7 @@ func NewDataSourceFactory(log log.Logger, cfg *rollup.Config, fetcher L1Transact
 }
 
 // OpenData returns a DataIter. This struct implements the `Next` function.
-func (ds *DataSourceFactory) OpenData(ctx context.Context, id eth.BlockID, batcherAddr common.Address) DataIter {
+func (ds *DataSourceFactory) OpenData(ctx context.Context, id eth.BlockID, batcherAddr common.Address) (DataIter, error) {
 	return NewDataSource(ctx, ds.log, ds.dsCfg, ds.fetcher, id, batcherAddr)
 }
 
@@ -65,7 +78,7 @@ type DataSource struct {
 
 // NewDataSource creates a new calldata source. It suppresses errors in fetching the L1 block if they occur.
 // If there is an error, it will attempt to fetch the result on the next call to `Next`.
-func NewDataSource(ctx context.Context, log log.Logger, dsCfg DataSourceConfig, fetcher L1TransactionFetcher, block eth.BlockID, batcherAddr common.Address) DataIter {
+func NewDataSource(ctx context.Context, log log.Logger, dsCfg DataSourceConfig, fetcher L1TransactionFetcher, block eth.BlockID, batcherAddr common.Address) (DataIter, error) {
 	_, txs, err := fetcher.InfoAndTxsByHash(ctx, block.Hash)
 
 	if err != nil {
@@ -76,12 +89,23 @@ func NewDataSource(ctx context.Context, log log.Logger, dsCfg DataSourceConfig, 
 			fetcher:     fetcher,
 			log:         log,
 			batcherAddr: batcherAddr,
-		}
+		}, nil
 	} else {
+		data, err := DataFromEVMTransactions(dsCfg, batcherAddr, txs, log.New("origin", block))
+		if err != nil {
+			return &DataSource{
+				open:        false,
+				id:          block,
+				dsCfg:       dsCfg,
+				fetcher:     fetcher,
+				log:         log,
+				batcherAddr: batcherAddr,
+			}, err
+		}
 		return &DataSource{
 			open: true,
-			data: DataFromEVMTransactions(dsCfg, batcherAddr, txs, log.New("origin", block)),
-		}
+			data: data,
+		}, nil
 	}
 }
 
@@ -92,7 +116,11 @@ func (ds *DataSource) Next(ctx context.Context) (eth.Data, error) {
 	if !ds.open {
 		if _, txs, err := ds.fetcher.InfoAndTxsByHash(ctx, ds.id.Hash); err == nil {
 			ds.open = true
-			ds.data = DataFromEVMTransactions(ds.dsCfg, ds.batcherAddr, txs, log.New("origin", ds.id))
+			ds.data, err = DataFromEVMTransactions(ds.dsCfg, ds.batcherAddr, txs, log.New("origin", ds.id))
+			if err != nil {
+				// already wrapped
+				return nil, err
+			}
 		} else if errors.Is(err, ethereum.NotFound) {
 			return nil, NewResetError(fmt.Errorf("failed to open calldata source: %w", err))
 		} else {
@@ -111,7 +139,7 @@ func (ds *DataSource) Next(ctx context.Context) (eth.Data, error) {
 // DataFromEVMTransactions filters all of the transactions and returns the calldata from transactions
 // that are sent to the batch inbox address from the batch sender address.
 // This will return an empty array if no valid transactions are found.
-func DataFromEVMTransactions(dsCfg DataSourceConfig, batcherAddr common.Address, txs types.Transactions, log log.Logger) []eth.Data {
+func DataFromEVMTransactions(dsCfg DataSourceConfig, batcherAddr common.Address, txs types.Transactions, log log.Logger) ([]eth.Data, error) {
 	var out []eth.Data
 	for j, tx := range txs {
 		if to := tx.To(); to != nil && *to == dsCfg.batchInboxAddress {
@@ -125,8 +153,28 @@ func DataFromEVMTransactions(dsCfg DataSourceConfig, batcherAddr common.Address,
 				log.Warn("tx in inbox with unauthorized submitter", "index", j, "txHash", tx.Hash(), "err", err)
 				continue // not an authorized batch submitter, ignore
 			}
-			out = append(out, tx.Data())
+
+			data := tx.Data()
+			switch len(data) {
+			case 0:
+				out = append(out, data)
+			default:
+				switch data[0] {
+				case fraxda.DerivationVersionFraxDa:
+					log.Info("fraxda: requesting data", "id", hex.EncodeToString(data))
+					ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+					data, err := daClient.Read(ctx, data[1:])
+					cancel()
+					if err != nil {
+						return nil, NewResetError(fmt.Errorf("fraxda: failed to fetch data for id %s: %w", hex.EncodeToString(data), err))
+					}
+					out = append(out, data)
+				default:
+					out = append(out, data)
+					log.Info("fraxda: using eth fallback")
+				}
+			}
 		}
 	}
-	return out
+	return out, nil
 }
