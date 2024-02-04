@@ -2,6 +2,7 @@ package batcher
 
 import (
 	"context"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"io"
@@ -10,6 +11,7 @@ import (
 	"sync"
 	"time"
 
+	fraxda "github.com/ethereum-optimism/optimism/frax-da"
 	"github.com/ethereum-optimism/optimism/op-batcher/metrics"
 	"github.com/ethereum-optimism/optimism/op-node/rollup"
 	"github.com/ethereum-optimism/optimism/op-node/rollup/derive"
@@ -48,6 +50,7 @@ type DriverSetup struct {
 	L1Client         L1Client
 	EndpointProvider dial.L2EndpointProvider
 	ChannelConfig    ChannelConfig
+	DAClient         *fraxda.DAClient
 	PlasmaDA         *plasma.DAClient
 }
 
@@ -506,6 +509,18 @@ func (l *BatchSubmitter) sendTransaction(ctx context.Context, txdata txData, que
 			}
 			// signal plasma commitment tx with TxDataVersion1
 			data = comm.TxData()
+		} else {
+			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+			l.Log.Info("fraxda: submitting data", "bytes", len(data))
+			id, err := l.DAClient.Write(ctx, data)
+			cancel()
+			if err == nil {
+				l.Log.Info("fraxda: data successfully submitted", "id", hex.EncodeToString(id))
+				data = append([]byte{fraxda.DerivationVersionFraxDa}, id...)
+			} else {
+				l.Log.Error("fraxda: data submission failed", "err", err)
+				return fmt.Errorf("could not submit tx data to fraxda: %w", err)
+			}
 		}
 		candidate = l.calldataTxCandidate(data)
 	}
