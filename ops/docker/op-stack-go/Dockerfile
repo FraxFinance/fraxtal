@@ -71,6 +71,8 @@ RUN --mount=type=cache,target=/root/.cache/go-build cd op-proposer && make op-pr
     GOOS=$TARGETOS GOARCH=$TARGETARCH GITCOMMIT=$GIT_COMMIT GITDATE=$GIT_DATE  VERSION="$OP_PROPOSER_VERSION"
 RUN --mount=type=cache,target=/root/.cache/go-build cd op-conductor && make op-conductor  \
     GOOS=$TARGETOS GOARCH=$TARGETARCH GITCOMMIT=$GIT_COMMIT GITDATE=$GIT_DATE  VERSION="$OP_CONDUCTOR_VERSION"
+RUN --mount=type=cache,target=/root/.cache/go-build cd op-bootnode && make op-bootnode  \
+    GOOS=$TARGETOS GOARCH=$TARGETARCH GITCOMMIT=$GIT_COMMIT GITDATE=$GIT_DATE  VERSION="$OP_CONDUCTOR_VERSION"
 
 
 FROM alpine:3.18
@@ -87,3 +89,4 @@ COPY --from=builder /app/op-dispute-mon/bin/op-dispute-mon /usr/local/bin/
 COPY --from=builder /app/op-batcher/bin/op-batcher /usr/local/bin/
 COPY --from=builder /app/op-proposer/bin/op-proposer /usr/local/bin/
 COPY --from=builder /app/op-conductor/bin/op-conductor /usr/local/bin/
+COPY --from=builder /app/op-bootnode/bin/op-bootnode /usr/local/bin/
