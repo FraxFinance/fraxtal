@@ -11,6 +11,7 @@ on:
           - op-node
           - op-batcher
           - op-proposer
+          - op-bootnode
       version:
         description: Service version to publish (will be the docker tag)
         required: true
