@@ -478,7 +478,8 @@ func (l *BatchSubmitter) sendTransaction(ctx context.Context, txdata txData, que
 				data = append([]byte{fraxda.DerivationVersionFraxDa}, id...)
 			} else {
 				l.Log.Error("fraxda: data submission failed", "err", err)
-				return fmt.Errorf("could not submit tx data to fraxda: %w", err)
+				l.recordFailedTx(txdata.ID(), err)
+				return nil
 			}
 		}
 		candidate = l.calldataTxCandidate(data)
