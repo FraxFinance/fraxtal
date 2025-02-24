@@ -1,11 +1,13 @@
 package batcher
 
 import (
+	"bytes"
 	"context"
 	"encoding/hex"
 	"errors"
 	"fmt"
 	"io"
+	"math"
 	"math/big"
 	_ "net/http/pprof"
 	"sync"
@@ -884,7 +886,31 @@ func (l *BatchSubmitter) sendTx(txdata txData, isCancel bool, candidate *txmgr.T
 		candidate.GasLimit = intrinsicGas
 	}
 
+	floorDataGas, err := FloorDataGas(candidate.TxData)
+	if err == nil && floorDataGas > candidate.GasLimit {
+		candidate.GasLimit = floorDataGas
+	}
+
 	queue.Send(txRef{id: txdata.ID(), isCancel: isCancel, isBlob: txdata.asBlob}, *candidate, receiptsCh)
+}
+
+// Taken from upstream geth to fix testnet error
+func FloorDataGas(data []byte) (uint64, error) {
+	TxTokenPerNonZeroByte := uint64(4)
+	TxGas := uint64(21000)
+	TxCostFloorPerToken := uint64(10)
+
+	var (
+		z      = uint64(bytes.Count(data, []byte{0}))
+		nz     = uint64(len(data)) - z
+		tokens = nz*TxTokenPerNonZeroByte + z
+	)
+	// Check for overflow
+	if (math.MaxUint64-TxGas)/TxCostFloorPerToken < tokens {
+		return 0, core.ErrGasUintOverflow
+	}
+	// Minimum gas required for a transaction based on its data tokens (EIP-7623).
+	return TxGas + tokens*TxCostFloorPerToken, nil
 }
 
 func (l *BatchSubmitter) blobTxCandidate(data txData) (*txmgr.TxCandidate, error) {
