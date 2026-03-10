@@ -46,10 +46,10 @@ func (c DAClient) Read(ctx context.Context, id []byte) ([]byte, error) {
 		return nil, fmt.Errorf("unable to create request to fetch data from DA: %w", err)
 	}
 	resp, err := c.httpClient.Do(request)
-
 	if err != nil {
 		return nil, fmt.Errorf("unable to fetch DA data: %w", err)
 	}
+	defer resp.Body.Close()
 	if resp.StatusCode != 200 {
 		return nil, fmt.Errorf("unable to fetch DA data, got status code %d", resp.StatusCode)
 	}
@@ -69,10 +69,10 @@ func (c DAClient) ReadCelestia(ctx context.Context, hexString string) ([]byte, e
 		return nil, fmt.Errorf("unable to create request to fetch celestia data from DA: %w", err)
 	}
 	resp, err := c.httpClient.Do(request)
-
 	if err != nil {
 		return nil, fmt.Errorf("unable to fetch DA celestia data: %w", err)
 	}
+	defer resp.Body.Close()
 	if resp.StatusCode != 200 {
 		return nil, fmt.Errorf("unable to fetch DA celestia data, got status code %d", resp.StatusCode)
 	}
@@ -94,10 +94,10 @@ func (c DAClient) Write(ctx context.Context, data []byte) ([]byte, error) {
 	}
 
 	resp, err := c.httpClient.Do(request)
-
 	if err != nil {
 		return nil, fmt.Errorf("unable to submit data to DA: %w", err)
 	}
+	defer resp.Body.Close()
 	if resp.StatusCode > 299 {
 		return nil, fmt.Errorf("unable to submit data to DA, got status code %d", resp.StatusCode)
 	}
