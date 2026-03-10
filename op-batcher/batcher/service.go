@@ -81,7 +81,8 @@ type BatcherService struct {
 	stopped         atomic.Bool
 
 	NotSubmittingOnStart bool
-	DAClient             *fraxda.DAClient
+
+	DAClient *fraxda.DAClient
 }
 
 type DriverSetupOption func(setup *DriverSetup)
