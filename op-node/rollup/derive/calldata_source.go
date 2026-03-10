@@ -115,23 +115,25 @@ func DataFromEVMTransactions(dsCfg DataSourceConfig, batcherAddr common.Address,
 			default:
 				switch data[0] {
 				case fraxda.DerivationVersionFraxDa:
-					log.Info("fraxda: requesting data", "id", hex.EncodeToString(data))
+					id := hex.EncodeToString(data)
+					log.Info("fraxda: requesting data", "id", id)
 					ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-					data, err := daClient.Read(ctx, data[1:])
+					daData, err := daClient.Read(ctx, data[1:])
 					cancel()
 					if err != nil {
-						return nil, NewResetError(fmt.Errorf("fraxda: failed to fetch data for id %s: %w", hex.EncodeToString(data), err))
+						return nil, NewResetError(fmt.Errorf("fraxda: failed to fetch data for id %s: %w", id, err))
 					}
-					out = append(out, data)
+					out = append(out, daData)
 				case fraxda.DerivationVersionCelestia:
-					log.Info("fraxda: requesting old celestia data", "id", hex.EncodeToString(data))
+					id := hex.EncodeToString(data)
+					log.Info("fraxda: requesting old celestia data", "id", id)
 					ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-					data, err := daClient.ReadCelestia(ctx, hex.EncodeToString(data[1:]))
+					daData, err := daClient.ReadCelestia(ctx, hex.EncodeToString(data[1:]))
 					cancel()
 					if err != nil {
-						return nil, NewResetError(fmt.Errorf("fraxda: failed to fetch celestia data for id %s: %w", hex.EncodeToString(data), err))
+						return nil, NewResetError(fmt.Errorf("fraxda: failed to fetch celestia data for id %s: %w", id, err))
 					}
-					out = append(out, data)
+					out = append(out, daData)
 				default:
 					out = append(out, data)
 					log.Info("fraxda: using eth fallback")
