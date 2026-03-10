@@ -20,7 +20,6 @@ import (
 	"github.com/ethereum-optimism/optimism/op-node/chaincfg"
 	"github.com/ethereum-optimism/optimism/op-node/params"
 	"github.com/ethereum-optimism/optimism/op-node/rollup"
-	"github.com/ethereum-optimism/optimism/op-service/bgpo"
 	"github.com/ethereum-optimism/optimism/op-service/cliapp"
 	"github.com/ethereum-optimism/optimism/op-service/dial"
 	"github.com/ethereum-optimism/optimism/op-service/eth"
@@ -83,10 +82,7 @@ type BatcherService struct {
 
 	NotSubmittingOnStart bool
 
-	// BlobGasPriceOracle tracks blob base gas prices for dynamic pricing
-	blobTipOracle *bgpo.BlobTipOracle
-	oracleStopCh  chan struct{}
-	DAClient      *fraxda.DAClient
+	DAClient *fraxda.DAClient
 }
 
 type DriverSetupOption func(setup *DriverSetup)
