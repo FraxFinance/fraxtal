@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"time"
 
+	"github.com/ethereum/go-ethereum/log"
 	"github.com/multiformats/go-multibase"
 )
 
@@ -41,6 +42,7 @@ func (c DAClient) Read(ctx context.Context, id []byte) ([]byte, error) {
 	}
 
 	fetchUrl := c.baseUrl.ResolveReference(&url.URL{Path: fmt.Sprintf("/v1/blobs/%s", ipfsCID)})
+	log.Info("Requesting DA data", "url", fetchUrl.String())
 	request, err := http.NewRequestWithContext(ctx, "GET", fetchUrl.String(), nil)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create request to fetch data from DA: %w", err)
